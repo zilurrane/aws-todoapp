@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import {
   View, Text, StyleSheet, TextInput, Button
 } from 'react-native'
@@ -13,6 +13,7 @@ const initialState = { name: '', description: '' }
 const Todo = () => {
   const [formState, setFormState] = useState(initialState)
   const [todos, setTodos] = useState([])
+  const latestUpdateTodos = useRef(null);
 
   useEffect(() => {
     fetchTodos(),
@@ -23,6 +24,12 @@ const Todo = () => {
     setFormState({ ...formState, [key]: value })
   }
 
+  function updateTodos(event) {
+    const todo = event.value.data.onCreateTodo;
+    setTodos([...todos, todo])
+  }
+  latestUpdateTodos.current = updateTodos;
+
   async function fetchTodos() {
     try {
       const todoData = await API.graphql(graphqlOperation(listTodos))
@@ -32,16 +39,12 @@ const Todo = () => {
   }
 
   function reloadTodo() {
-    console.log('todos', todos);
     const subscription = API.graphql(
       graphqlOperation(onCreateTodo)
     ).subscribe({
-      next: event => {
-        if (event){
-          console.log("Subscription: " + JSON.stringify(event.value.data, null, 2), event);
-          const todo = event.value.data.onCreateTodo;
-          console.log(todos, todo);
-          setTodos([...todos, todo])
+      next: (event) => {
+        if (event) {
+          latestUpdateTodos.current(event);
         }
       }
     });
@@ -50,7 +53,6 @@ const Todo = () => {
   async function addTodo() {
     try {
       const todo = { ...formState }
-      setTodos([...todos, todo])
       setFormState(initialState)
       await API.graphql(graphqlOperation(createTodo, { input: todo }))
     } catch (err) {
