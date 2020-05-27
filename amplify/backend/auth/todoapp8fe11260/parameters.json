@@ -1,6 +1,6 @@
 {
     "identityPoolName": "todoapp8fe11260_identitypool_8fe11260",
-    "allowUnauthenticatedIdentities": false,
+    "allowUnauthenticatedIdentities": true,
     "resourceNameTruncated": "todoap8fe11260",
     "userPoolName": "todoapp8fe11260_userpool_8fe11260",
     "autoVerifiedAttributes": [
