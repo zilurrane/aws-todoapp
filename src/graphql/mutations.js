@@ -10,6 +10,9 @@ export const createTodo = /* GraphQL */ `
       id
       name
       description
+      _version
+      _deleted
+      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -24,6 +27,9 @@ export const updateTodo = /* GraphQL */ `
       id
       name
       description
+      _version
+      _deleted
+      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -38,6 +44,9 @@ export const deleteTodo = /* GraphQL */ `
       id
       name
       description
+      _version
+      _deleted
+      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -52,6 +61,9 @@ export const createUser = /* GraphQL */ `
       id
       name
       address
+      _version
+      _deleted
+      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -66,6 +78,9 @@ export const updateUser = /* GraphQL */ `
       id
       name
       address
+      _version
+      _deleted
+      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -80,6 +95,9 @@ export const deleteUser = /* GraphQL */ `
       id
       name
       address
+      _version
+      _deleted
+      _lastChangedAt
       createdAt
       updatedAt
     }
