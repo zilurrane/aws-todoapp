@@ -3,10 +3,11 @@ import {
   View, Text, StyleSheet, TextInput, Button
 } from 'react-native'
 
-import { API, graphqlOperation } from 'aws-amplify'
-import { createTodo } from './src/graphql/mutations'
-import { listTodos } from './src/graphql/queries'
+import { API, graphqlOperation, DataStore, Predicates } from 'aws-amplify'
+// import { createTodo } from './src/graphql/mutations'
+// import { listTodos } from './src/graphql/queries'
 import { onCreateTodo } from './src/graphql/subscriptions'
+import { Todo as TodoModel } from './src/models/index'
 
 const initialState = { name: '', description: '' }
 
@@ -24,21 +25,23 @@ const Todo = () => {
     setFormState({ ...formState, [key]: value })
   }
 
-  function updateTodos(event) {
-    const todo = event.value.data.onCreateTodo;
+  function updateTodos(todo) {
     setTodos([...todos, todo])
   }
   latestUpdateTodos.current = updateTodos;
 
   async function fetchTodos() {
     try {
-      const todoData = await API.graphql(graphqlOperation(listTodos))
-      const todos = todoData.data.listTodos.items
-      setTodos(todos)
-    } catch (err) { console.log('error fetching todos') }
+      // const todoData = await API.graphql(graphqlOperation(listTodos))
+      // const todos = todoData.data.listTodos.items
+      const todos = await DataStore.query(TodoModel, Predicates.ALL);
+      console.log(todos, DataStore);
+      setTodos(todos);
+    } catch (err) { console.log(err, 'error fetching todos') }
   }
 
   function reloadTodo() {
+    /*
     const subscription = API.graphql(
       graphqlOperation(onCreateTodo)
     ).subscribe({
@@ -48,13 +51,20 @@ const Todo = () => {
         }
       }
     });
+    */
+   const subscription = DataStore.observe(TodoModel).subscribe(event => {
+    if(event.opType === "INSERT") {
+      latestUpdateTodos.current(event.element);
+    }
+   });
   }
 
   async function addTodo() {
     try {
       const todo = { ...formState }
       setFormState(initialState)
-      await API.graphql(graphqlOperation(createTodo, { input: todo }))
+      // await API.graphql(graphqlOperation(createTodo, { input: todo }))
+      await DataStore.save(new TodoModel(todo));
     } catch (err) {
       console.log('error creating todo:', err)
     }
@@ -91,7 +101,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 20 },
   todo: { marginBottom: 15 },
   input: { height: 50, backgroundColor: '#ddd', marginBottom: 10, padding: 8 },
-  todoName: { fontSize: 18, fontWeight: 900 }
+  todoName: { fontSize: 18, fontWeight: '900' }
 })
 
 export default Todo
