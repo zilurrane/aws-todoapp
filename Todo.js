@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, TextInput, Button
 } from 'react-native'
 
-import { API, graphqlOperation, DataStore, Predicates } from 'aws-amplify'
+import { API, graphqlOperation, DataStore, Predicates, Auth } from 'aws-amplify'
 // import { createTodo } from './src/graphql/mutations'
 // import { listTodos } from './src/graphql/queries'
 import { onCreateTodo } from './src/graphql/subscriptions'
@@ -14,11 +14,13 @@ const initialState = { name: '', description: '' }
 const Todo = () => {
   const [formState, setFormState] = useState(initialState)
   const [todos, setTodos] = useState([])
+  const [user, setUser] = useState([])
   const latestUpdateTodos = useRef(null);
 
   useEffect(() => {
     fetchTodos(),
-    reloadTodo()
+      reloadTodo(),
+      getCurrentUserDetails()
   }, [])
 
   function setInput(key, value) {
@@ -29,6 +31,11 @@ const Todo = () => {
     setTodos([...todos, todo])
   }
   latestUpdateTodos.current = updateTodos;
+
+  async function getCurrentUserDetails() {
+    const user = await Auth.currentUserInfo();
+    setUser(user);
+  }
 
   async function fetchTodos() {
     try {
@@ -52,14 +59,15 @@ const Todo = () => {
       }
     });
     */
-   const subscription = DataStore.observe(TodoModel).subscribe(event => {
-    if(event.opType === "INSERT") {
-      latestUpdateTodos.current(event.element);
-    }
-   });
+    const subscription = DataStore.observe(TodoModel).subscribe(event => {
+      if (event.opType === "INSERT") {
+        latestUpdateTodos.current(event.element);
+      }
+    });
   }
 
   async function addTodo() {
+    console.log(user);
     try {
       const todo = { ...formState }
       setFormState(initialState)
@@ -70,6 +78,7 @@ const Todo = () => {
     }
   }
 
+  
   return (
     <View style={styles.container}>
       <TextInput
