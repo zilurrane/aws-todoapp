@@ -8,6 +8,7 @@ import { API, graphqlOperation, DataStore, Predicates, Auth } from 'aws-amplify'
 // import { listTodos } from './src/graphql/queries'
 import { onCreateTodo } from './src/graphql/subscriptions'
 import { Todo as TodoModel } from './src/models/index'
+import { PgpKey } from './src/shared/security/PgpKey';
 
 const initialState = { name: '', description: '' }
 
@@ -35,6 +36,8 @@ const Todo = () => {
   async function getCurrentUserDetails() {
     const user = await Auth.currentUserInfo();
     setUser(user);
+    console.log(user.attributes.phone_number)
+    PgpKey.generate(user.attributes.phone_number, (key) => console.log(key));
   }
 
   async function fetchTodos() {
