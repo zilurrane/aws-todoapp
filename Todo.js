@@ -16,6 +16,8 @@ const Todo = () => {
   const [formState, setFormState] = useState(initialState)
   const [todos, setTodos] = useState([])
   const [user, setUser] = useState([])
+  const [myKey, setMyKey] = useState([])
+  
   const latestUpdateTodos = useRef(null);
 
   useEffect(() => {
@@ -37,7 +39,7 @@ const Todo = () => {
     const user = await Auth.currentUserInfo();
     setUser(user);
     console.log(user.attributes.phone_number)
-    PgpKey.generate(user.attributes.phone_number, (key) => console.log(key));
+    PgpKey.generate(user.attributes.phone_number, (key) => { setMyKey(key); console.log(key); });
   }
 
   async function fetchTodos() {
@@ -73,6 +75,11 @@ const Todo = () => {
     console.log(user);
     try {
       const todo = { ...formState }
+      myKey.encrypt(todo.description, (cipher) => {
+        console.log(todo.description, "ZILU", cipher);
+        myKey.decrypt(cipher, (message) => console.log(todo.description, "NERIKA", message));
+      });
+      // PgpKey.load(message.publicKey, key => {
       setFormState(initialState)
       // await API.graphql(graphqlOperation(createTodo, { input: todo }))
       await DataStore.save(new TodoModel(todo));
